@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Japanese product information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "hot": { "type": "boolean" },
+        "stock": { "type": "number" }
+      },
+      "required": ["name", "category", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order details",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "customerAddress": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "quantity": { "type": "number" },
+              "price": { "type": "number" },
+              "name": { "type": "string" }
+            }
+          }
+        },
+        "totalPrice": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "completed", "cancelled"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerName", "customerPhone", "items", "totalPrice", "status"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer contact information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" }
+      },
+      "required": ["name", "phone"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }
+      },
+      "required": ["name"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "Product",
+      "description": "List of Japanese products"
+    },
+    "orders": {
+      "schema": "Order",
+      "description": "Customer orders"
+    },
+    "customers": {
+      "schema": "Customer",
+      "description": "Customer database for management"
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Product categories"
+    },
+    "admins": {
+      "schema": {
+        "title": "Admin",
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" }
+        }
+      },
+      "description": "Users with administrative privileges"
+    }
+  }
+}

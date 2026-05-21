@@ -1,0 +1,72 @@
+[debug] [2026-04-28T17:21:45.847Z] ----------------------------------------------------------------------
+[debug] [2026-04-28T17:21:45.851Z] Command:       /usr/local/bin/node /root/.npm/_npx/ba4f1959e38407b5/node_modules/.bin/firebase deploy --only firestore:rules --project gen-lang-client-0526032753 --debug
+[debug] [2026-04-28T17:21:45.852Z] CLI Version:   15.15.0
+[debug] [2026-04-28T17:21:45.852Z] Platform:      linux
+[debug] [2026-04-28T17:21:45.852Z] Node Version:  v22.22.2
+[debug] [2026-04-28T17:21:45.853Z] Time:          Tue Apr 28 2026 17:21:45 GMT+0000 (Coordinated Universal Time)
+[debug] [2026-04-28T17:21:45.853Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-28T17:21:45.855Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-04-28T17:21:47.961Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-28T17:21:48.010Z] Running auto auth
+[debug] [2026-04-28T17:21:48.016Z] [iam] checking project gen-lang-client-0526032753 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-04-28T17:21:48.017Z] No OAuth tokens found
+[debug] [2026-04-28T17:21:48.018Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions [none]
+[debug] [2026-04-28T17:21:48.018Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions  x-goog-user-project=gen-lang-client-0526032753
+[debug] [2026-04-28T17:21:48.018Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-04-28T17:21:48.358Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-04-28T17:21:48.359Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-04-28T17:21:49.027Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions 403
+[debug] [2026-04-28T17:21:49.028Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753","consumer":"projects/gen-lang-client-0526032753","service":"cloudresourcemanager.googleapis.com","containerInfo":"gen-lang-client-0526032753"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753"}]}]}}
+[debug] [2026-04-28T17:21:49.029Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/gen-lang-client-0526032753:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes.
+[info] 
+[info] === Deploying to 'gen-lang-client-0526032753'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-04-28T17:21:49.034Z] No OAuth tokens found
+[debug] [2026-04-28T17:21:49.034Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/gen-lang-client-0526032753/services/firestore.googleapis.com [none]
+[debug] [2026-04-28T17:21:49.034Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/gen-lang-client-0526032753/services/firestore.googleapis.com  x-goog-user-project=gen-lang-client-0526032753
+[debug] [2026-04-28T17:21:50.223Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/gen-lang-client-0526032753/services/firestore.googleapis.com 403
+[debug] [2026-04-28T17:21:50.223Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/gen-lang-client-0526032753/services/firestore.googleapis.com [omitted]
+[error] 
+[error] Error: Request to https://serviceusage.googleapis.com/v1/projects/gen-lang-client-0526032753/services/firestore.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-04-28T17:21:50.225Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "USER_PROJECT_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consoleUrl": "https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753",
+            "containerInfo": "gen-lang-client-0526032753",
+            "service": "serviceusage.googleapis.com",
+            "consumer": "projects/gen-lang-client-0526032753"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Caller does not have required permission to use project gen-lang-client-0526032753. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753 and then retry. Propagation of the new permission may take a few minutes."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developer console IAM admin",
+              "url": "https://console.developers.google.com/iam-admin/iam?project=gen-lang-client-0526032753"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}

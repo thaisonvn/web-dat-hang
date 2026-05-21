@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "sakura-mart-db",
+    "rules": "firestore.rules"
+  }
+}
