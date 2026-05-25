@@ -16,7 +16,9 @@ import {
   Settings,
   Package,
   Users,
-  ClipboardList
+  ClipboardList,
+  Eye,
+  Printer
 } from 'lucide-react';
 import { 
   collection, 
@@ -797,6 +799,9 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [isOrderViewOpen, setIsOrderViewOpen] = useState(false);
+
 
   useEffect(() => {
     if (!isAdmin || !user) return;
@@ -978,16 +983,25 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <select 
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id!, e.target.value as any)}
-                        className="text-[10px] font-bold bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500"
-                      >
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="approved">Duyệt</option>
-                        <option value="completed">Xong</option>
-                        <option value="cancelled">Hủy</option>
-                      </select>
+                      <div className="flex items-center justify-center gap-2">
+                        <select 
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id!, e.target.value as any)}
+                          className="text-[10px] font-bold bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500"
+                        >
+                          <option value="pending">Chờ duyệt</option>
+                          <option value="approved">Duyệt</option>
+                          <option value="completed">Xong</option>
+                          <option value="cancelled">Hủy</option>
+                        </select>
+                        <button 
+                          onClick={() => { setViewingOrder(order); setIsOrderViewOpen(true); }}
+                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                          title="Xem chi tiết & In"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1077,7 +1091,99 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
             onClose={() => setIsCategoryModalOpen(false)}
           />
         )}
+        {isOrderViewOpen && viewingOrder && (
+          <OrderViewModal 
+            order={viewingOrder}
+            onClose={() => setIsOrderViewOpen(false)}
+          />
+        )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function OrderViewModal({ order, onClose }: { order: Order, onClose: () => void }) {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-[80]">
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm no-print" onClick={onClose} />
+      <motion.div 
+        id="print-section"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg z-[90] space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar"
+      >
+        <div className="flex justify-between items-start no-print">
+          <h3 className="text-xl font-bold text-slate-800">Chi tiết đơn hàng</h3>
+          <button onClick={handlePrint} className="p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+            <Printer className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Print Header */}
+        <div className="hidden print:block mb-6 pb-6 border-b border-dashed border-slate-300">
+          <h2 className="text-2xl font-bold text-center mb-2">Cửa hàng Độ Lành</h2>
+          <p className="text-center text-sm">Hệ thống đặt hàng nội địa Nhật uy tín</p>
+          <p className="text-center text-xs mt-1">Hotline: 090-548-9967</p>
+          <h3 className="text-xl font-bold text-center mt-6 uppercase">Hóa đơn mua hàng</h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 print:bg-transparent print:border-none print:p-0">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2 print:text-xs">Thông tin khách hàng</h4>
+            <div className="space-y-2 text-sm text-slate-800">
+              <p><span className="font-medium mr-2">Họ tên:</span> {order.customerName}</p>
+              <p><span className="font-medium mr-2">Số điện thoại:</span> {order.customerPhone}</p>
+              <p><span className="font-medium mr-2">Địa chỉ:</span> {order.customerAddress}</p>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 print:text-xs">Danh sách sản phẩm</h4>
+            <div className="border border-slate-200 rounded-lg overflow-hidden print:border-none">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 text-[10px] uppercase text-slate-500 print:bg-transparent print:border-b-2 print:border-slate-800">
+                  <tr>
+                    <th className="px-4 py-3">Sản phẩm</th>
+                    <th className="px-4 py-3 text-center">SL</th>
+                    <th className="px-4 py-3 text-right">Đơn giá</th>
+                    <th className="px-4 py-3 text-right">Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 print:divide-slate-200">
+                  {order.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="px-4 py-3 font-medium text-slate-800">{item.name}</td>
+                      <td className="px-4 py-3 text-center">{item.quantity}</td>
+                      <td className="px-4 py-3 text-right text-slate-600">{(item.price || 0).toLocaleString('vi-VN')}đ</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-800">{((item.price || 0) * item.quantity).toLocaleString('vi-VN')}đ</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-4 border-t border-slate-200 print:border-t-2 print:border-slate-800">
+            <span className="font-bold text-slate-800 uppercase text-sm">Tổng cộng</span>
+            <span className="text-xl font-bold text-red-600 print:text-black">{order.totalPrice.toLocaleString('vi-VN')}đ</span>
+          </div>
+        </div>
+
+        <div className="pt-4 no-print flex gap-3">
+          <button onClick={onClose} className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+            Đóng
+          </button>
+        </div>
+        
+        {/* Print Footer */}
+        <div className="hidden print:block mt-12 text-center text-sm italic">
+          <p>Cảm ơn quý khách đã tin tưởng và ủng hộ!</p>
+        </div>
+      </motion.div>
     </div>
   );
 }
