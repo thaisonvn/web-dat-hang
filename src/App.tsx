@@ -93,6 +93,7 @@ export default function App() {
   const [cart, setCart] = useState<{product: Product, quantity: number}[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả sản phẩm');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -209,8 +210,16 @@ export default function App() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-slate-50 font-sans overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0">
+      <aside className={`fixed inset-y-0 left-0 w-64 md:position-unset md:relative md:w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 md:translate-x-0 md:flex`}>
         <div className="p-6 flex items-center gap-3 border-b border-slate-100 bg-brand-primary text-white">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
             <span className="text-brand-primary font-bold text-xs underline">ĐL</span>
@@ -224,6 +233,7 @@ export default function App() {
             onClick={() => {
               setSelectedCategory('Tất cả sản phẩm');
               setView('store');
+              setIsSidebarOpen(false);
             }}
             className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
               selectedCategory === 'Tất cả sản phẩm' && view === 'store'
@@ -239,6 +249,7 @@ export default function App() {
               onClick={() => {
                 setSelectedCategory(cat.name);
                 setView('store');
+                setIsSidebarOpen(false);
               }}
               className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                 selectedCategory === cat.name && view === 'store'
@@ -254,7 +265,10 @@ export default function App() {
             <>
               <div className="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Quản trị</div>
               <button 
-                onClick={() => setView('admin')}
+                onClick={() => {
+                  setView('admin');
+                  setIsSidebarOpen(false);
+                }}
                 className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-2 ${
                   view === 'admin'
                     ? 'bg-indigo-50 text-indigo-700' 
@@ -298,19 +312,27 @@ export default function App() {
       {/* Main Area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm shrink-0">
-          <div className="relative w-full max-w-md hidden sm:block">
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm sản phẩm Nhật..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-indigo-500"
-            />
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between shadow-sm shrink-0">
+          <div className="flex items-center gap-3 w-full sm:max-w-md">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg md:hidden"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="relative w-full">
+              <input 
+                type="text" 
+                placeholder="Tìm sản phẩm..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-indigo-500"
+              />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            </div>
           </div>
           
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto pl-2">
             <button 
               onClick={() => setIsCartOpen(true)}
               className="flex items-center gap-2 text-slate-600 hover:text-indigo-600 transition-colors"
