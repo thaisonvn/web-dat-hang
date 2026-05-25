@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "database": "sakura-mart-db",
+    "database": "ai-studio-5f2041cb-7b42-44a7-9a14-eda993b18f54",
     "rules": "firestore.rules"
   }
 }

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "gen-lang-client-0526032753"
+  },
+  "targets": {
+    "gen-lang-client-0526032753": {
+      "firestore": {
+        "sakura-mart-db-2": [
+          "sakura-mart-db-2"
+        ]
+      }
+    }
+  }
+}
