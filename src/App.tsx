@@ -489,13 +489,19 @@ function StoreView({
 }
 
 function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: () => void }) {
+  const [showDesc, setShowDesc] = useState(false);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group flex flex-col h-full"
     >
-      <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0 group/img cursor-pointer">
+      <div 
+        className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0 group/img cursor-pointer"
+        onClick={() => setShowDesc(!showDesc)}
+        onMouseLeave={() => setShowDesc(false)}
+      >
         {product.hot && (
           <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded z-20">HOT</span>
         )}
@@ -505,7 +511,7 @@ function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: 
           className="w-full h-full object-contain p-4 group-hover/img:scale-105 transition-transform duration-300"
         />
         {/* Description Overlay */}
-        <div className="absolute inset-0 bg-indigo-900/95 p-4 flex flex-col justify-center opacity-0 group-hover/img:opacity-100 transition-all duration-300 translate-y-4 group-hover/img:translate-y-0 z-10 w-full h-full custom-scrollbar overflow-y-auto">
+        <div className={`absolute inset-0 bg-indigo-900/95 p-4 flex flex-col justify-center transition-all duration-300 z-10 w-full h-full custom-scrollbar overflow-y-auto ${showDesc ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 group-hover/img:opacity-100 group-hover/img:translate-y-0'}`}>
           <h4 className="text-white text-xs font-bold mb-2 uppercase border-b border-indigo-700 pb-2">Mô tả sản phẩm</h4>
           <p className="text-indigo-100 text-xs leading-relaxed whitespace-pre-wrap">{product.description || 'Đang cập nhật mô tả.'}</p>
         </div>
