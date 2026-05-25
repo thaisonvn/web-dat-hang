@@ -467,15 +467,20 @@ function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: 
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group flex flex-col h-full"
     >
-      <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0">
+      <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0 group/img cursor-pointer">
         {product.hot && (
-          <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">HOT</span>
+          <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded z-20">HOT</span>
         )}
         <img 
           src={product.imageUrl || 'https://via.placeholder.com/300x300?text=Cửa+hàng+Độ+Lành'} 
           alt={product.name}
-          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-contain p-4 group-hover/img:scale-105 transition-transform duration-300"
         />
+        {/* Description Overlay */}
+        <div className="absolute inset-0 bg-indigo-900/95 p-4 flex flex-col justify-center opacity-0 group-hover/img:opacity-100 transition-all duration-300 translate-y-4 group-hover/img:translate-y-0 z-10 w-full h-full custom-scrollbar overflow-y-auto">
+          <h4 className="text-white text-xs font-bold mb-2 uppercase border-b border-indigo-700 pb-2">Mô tả sản phẩm</h4>
+          <p className="text-indigo-100 text-xs leading-relaxed whitespace-pre-wrap">{product.description || 'Đang cập nhật mô tả.'}</p>
+        </div>
       </div>
       <div className="p-4 flex flex-col flex-1">
         <p className="text-[10px] text-indigo-600 font-bold uppercase mb-1">{product.category}</p>
