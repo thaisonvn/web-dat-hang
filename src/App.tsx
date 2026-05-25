@@ -103,8 +103,8 @@ export default function App() {
       setUser(u);
       if (u) {
         // Simple admin check
-        const adminEmail = "nguyen.thai.son@abusys.co.jp";
-        if (u.email === adminEmail) {
+        const adminEmails = ["nguyen.thai.son@abusys.co.jp", "thaison.nguyen.dev@gmail.com"];
+        if (u.email && adminEmails.includes(u.email)) {
           setIsAdmin(true);
         } else {
           try {
@@ -353,11 +353,11 @@ export default function App() {
         </div>
 
         {/* Footer */}
-        <footer className="h-10 bg-white border-t border-slate-200 px-6 flex items-center justify-between text-[10px] text-slate-400 font-medium shrink-0 shrink-0">
-          <div>© 2024 Cửa hàng Độ Lành - Hệ thống đặt hàng nội địa Nhật uy tín</div>
+        <footer className="h-10 bg-white border-t border-slate-200 px-6 flex items-center justify-between text-[10px] text-slate-400 font-medium shrink-0">
+          <div>© 2026 Cửa hàng Độ Lành - Hệ thống đặt hàng nội địa Nhật uy tín</div>
           <div className="flex gap-4">
-            <span>Hotline: 090x-xxx-xxx</span>
-            <span className="hidden sm:inline">Địa chỉ: Shinjuku, Tokyo / Hà Nội</span>
+            <span>Hotline: 090-548-9967</span>
+            <span className="hidden sm:inline">Địa chỉ: Hachioji, Tokyo / Đức Phổ, Quảng Ngãi</span>
           </div>
         </footer>
 
@@ -392,6 +392,23 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Floating Zalo Button */}
+      <a 
+        href="https://zalo.me/0905489967" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors hover:scale-105 active:scale-95 group"
+        title="Liên hệ Zalo"
+      >
+        {/* Simple SVG Zalo-like chat bubble */}
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span className="absolute right-14 bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+          Zalo: 090-548-9967
+        </span>
+      </a>
     </div>
   );
 }
