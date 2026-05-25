@@ -1209,6 +1209,15 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
               placeholder="https://..."
             />
           </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Mô tả sản phẩm</label>
+            <textarea 
+              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm custom-scrollbar h-24 resize-none"
+              value={form.description}
+              onChange={e => setForm({...form, description: e.target.value})}
+              placeholder="Nhập mô tả sản phẩm..."
+            />
+          </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input 
               type="checkbox"
