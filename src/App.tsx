@@ -78,8 +78,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.error('Firestore Error: ', JSON.stringify(errInfo, null, 2));
+  // Do not throw to prevent white screen crashes
 }
 
 // --- Components ---
@@ -129,6 +129,7 @@ export default function App() {
       setProducts(prods);
       setIsLoading(false);
     }, (error) => {
+      setIsLoading(false);
       handleFirestoreError(error, OperationType.GET, 'products');
     });
 
