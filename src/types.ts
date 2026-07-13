@@ -7,6 +7,7 @@ export interface Product {
   imageUrl: string;
   hot: boolean;
   stock: number;
+  note?: string;
 }
 
 export interface OrderItem {

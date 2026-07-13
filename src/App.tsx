@@ -804,6 +804,8 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
   const [isOrderViewOpen, setIsOrderViewOpen] = useState(false);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+  const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState('all');
 
   useEffect(() => {
     if (!isAdmin || !user) return;
@@ -861,12 +863,24 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
-      const matchSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
-                          o.customerPhone.includes(orderSearch);
+      const searchLower = orderSearch.toLowerCase();
+      const matchSearch = o.customerName.toLowerCase().includes(searchLower) || 
+                          o.customerPhone.includes(orderSearch) ||
+                          o.items.some(item => item.name.toLowerCase().includes(searchLower));
+      
       const matchStatus = orderStatusFilter === 'all' || o.status === orderStatusFilter;
+      
       return matchSearch && matchStatus;
     });
   }, [orders, orderSearch, orderStatusFilter]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(productSearch.toLowerCase());
+      const matchCategory = productCategoryFilter === 'all' || p.category === productCategoryFilter;
+      return matchSearch && matchCategory;
+    });
+  }, [products, productSearch, productCategoryFilter]);
 
   return (
     <div className="space-y-6">
@@ -892,20 +906,38 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
         </div>
 
         {activeTab === 'products' && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto items-center">
+            <div className="relative w-full sm:w-auto">
+              <input 
+                type="text" 
+                placeholder="Tìm tên sản phẩm..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            </div>
+            <select 
+              value={productCategoryFilter}
+              onChange={e => setProductCategoryFilter(e.target.value)}
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:w-auto"
+            >
+              <option value="all">Tất cả danh mục</option>
+              {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
             <button 
               onClick={() => {
                 if (window.confirm('Hệ thống sẽ thêm vào danh sách các sản phẩm mẫu chưa có. Bạn có chắc chắn không?')) {
                   seedProducts().then(() => alert('Đã thêm sản phẩm mẫu.'));
                 }
               }}
-              className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-200 hover:bg-emerald-100"
+              className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-200 hover:bg-emerald-100 whitespace-nowrap"
             >
               + Thêm dữ liệu mẫu
             </button>
             <button 
               onClick={() => { setEditingProduct(null); setIsProductModalOpen(true); }}
-              className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-200 hover:bg-indigo-100"
+              className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-200 hover:bg-indigo-100 whitespace-nowrap"
             >
               + Thêm sản phẩm
             </button>
@@ -964,24 +996,26 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
               <div className="relative w-full sm:max-w-xs">
                 <input 
                   type="text" 
-                  placeholder="Tìm theo tên KH, SĐT..."
+                  placeholder="Tìm theo tên KH, SĐT, tên sản phẩm..."
                   value={orderSearch}
                   onChange={(e) => setOrderSearch(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               </div>
-              <select 
-                value={orderStatusFilter}
-                onChange={e => setOrderStatusFilter(e.target.value)}
-                className="w-full sm:w-auto px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
-              >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="approved">Đã duyệt</option>
-                <option value="completed">Đã xong</option>
-                <option value="cancelled">Đã hủy</option>
-              </select>
+              <div className="flex w-full sm:w-auto gap-2">
+                <select 
+                  value={orderStatusFilter}
+                  onChange={e => setOrderStatusFilter(e.target.value)}
+                  className="w-full sm:w-auto px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="pending">Chờ duyệt</option>
+                  <option value="approved">Đã duyệt</option>
+                  <option value="completed">Đã xong</option>
+                  <option value="cancelled">Đã hủy</option>
+                </select>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -1101,7 +1135,7 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {products.map(prod => (
+                {filteredProducts.map(prod => (
                   <tr key={prod.id} className="hover:bg-slate-50/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -1330,7 +1364,8 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
     price: 0,
     description: '',
     imageUrl: '',
-    hot: false
+    hot: false,
+    note: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1405,6 +1440,15 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
               value={form.description}
               onChange={e => setForm({...form, description: e.target.value})}
               placeholder="Nhập mô tả sản phẩm..."
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Ghi chú nội bộ (Không hiển thị cho khách)</label>
+            <textarea 
+              className="w-full px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm custom-scrollbar h-20 resize-none"
+              value={form.note || ''}
+              onChange={e => setForm({...form, note: e.target.value})}
+              placeholder="Nhập ghi chú quản trị..."
             />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
