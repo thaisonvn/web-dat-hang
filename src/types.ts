@@ -21,6 +21,8 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   customerAddress: string;
+  note?: string;
+  adminNote?: string;
   items: OrderItem[];
   totalPrice: number;
   status: 'pending' | 'approved' | 'completed' | 'cancelled';

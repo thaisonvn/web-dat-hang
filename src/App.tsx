@@ -652,6 +652,7 @@ function OrderModal({
         customerName: formData.name,
         customerPhone: formData.phone,
         customerAddress: formData.address,
+        note: formData.note,
         items: cart.map(item => ({
           productId: item.product.id!,
           name: item.product.name,
@@ -801,7 +802,8 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [isOrderViewOpen, setIsOrderViewOpen] = useState(false);
-
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all');
 
   useEffect(() => {
     if (!isAdmin || !user) return;
@@ -841,11 +843,30 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
     await updateDoc(doc(db, 'orders', orderId), { status });
   };
 
+  const updateOrderAdminNote = async (orderId: string, adminNote: string) => {
+    await updateDoc(doc(db, 'orders', orderId), { adminNote });
+  };
+
   const handleDeleteCategory = async (id: string) => {
     if (window.confirm('Xác nhận xóa danh mục này? Các sản phẩm thuộc danh mục này sẽ hiển thị ở "Tất cả sản phẩm" nếu bạn không đổi danh mục cho chúng.')) {
       await deleteDoc(doc(db, 'categories', id));
     }
   };
+
+  const handleDeleteOrder = async (id: string) => {
+    if (window.confirm('Xác nhận xóa đơn hàng đã hủy này?')) {
+      await deleteDoc(doc(db, 'orders', id));
+    }
+  };
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter(o => {
+      const matchSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
+                          o.customerPhone.includes(orderSearch);
+      const matchStatus = orderStatusFilter === 'all' || o.status === orderStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [orders, orderSearch, orderStatusFilter]);
 
   return (
     <div className="space-y-6">
@@ -938,75 +959,133 @@ function AdminPanel({ isAdmin, user, categories }: { isAdmin: boolean; user: Use
         )}
 
         {activeTab === 'orders' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4">Khách hàng</th>
-                  <th className="px-6 py-4">Sản phẩm</th>
-                  <th className="px-6 py-4 text-right">Tổng cộng</th>
-                  <th className="px-6 py-4 text-center">Trạng thái</th>
-                  <th className="px-6 py-4 text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {orders.map(order => (
-                  <tr key={order.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800">{order.customerName}</div>
-                      <div className="text-[11px] text-slate-500">{order.customerPhone}</div>
-                      <div className="text-[10px] text-slate-400 line-clamp-1 italic">{order.customerAddress}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-xs space-y-1">
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className="flex gap-1">
-                            <span className="font-bold text-indigo-600 min-w-[20px]">{item.quantity}x</span>
-                            <span className="truncate max-w-[200px]">{item.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-red-600">
-                      {order.totalPrice.toLocaleString('vi-VN')}đ
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        order.status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                        order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                        'bg-slate-100 text-slate-700'
-                      }`}>
-                        {order.status === 'pending' ? 'Chờ duyệt' :
-                         order.status === 'approved' ? 'Đã duyệt' :
-                         order.status === 'completed' ? 'Đã xong' : 'Đã hủy'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <select 
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order.id!, e.target.value as any)}
-                          className="text-[10px] font-bold bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500"
-                        >
-                          <option value="pending">Chờ duyệt</option>
-                          <option value="approved">Duyệt</option>
-                          <option value="completed">Xong</option>
-                          <option value="cancelled">Hủy</option>
-                        </select>
-                        <button 
-                          onClick={() => { setViewingOrder(order); setIsOrderViewOpen(true); }}
-                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
-                          title="Xem chi tiết & In"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+          <div className="flex flex-col">
+            <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full sm:max-w-xs">
+                <input 
+                  type="text" 
+                  placeholder="Tìm theo tên KH, SĐT..."
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              </div>
+              <select 
+                value={orderStatusFilter}
+                onChange={e => setOrderStatusFilter(e.target.value)}
+                className="w-full sm:w-auto px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="completed">Đã xong</option>
+                <option value="cancelled">Đã hủy</option>
+              </select>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4">Khách hàng</th>
+                    <th className="px-6 py-4">Ngày đặt</th>
+                    <th className="px-6 py-4">Ghi chú (Admin)</th>
+                    <th className="px-6 py-4">Sản phẩm</th>
+                    <th className="px-6 py-4 text-right">Tổng cộng</th>
+                    <th className="px-6 py-4 text-center">Trạng thái</th>
+                    <th className="px-6 py-4 text-center">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredOrders.map(order => (
+                    <tr key={order.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-800">{order.customerName}</div>
+                        <div className="text-[11px] text-slate-500">{order.customerPhone}</div>
+                        <div className="text-[10px] text-slate-400 line-clamp-1 italic">{order.customerAddress}</div>
+                      </td>
+                      <td className="px-6 py-4 min-w-[120px]">
+                        <div className="text-[11px] text-slate-800 font-medium">
+                          {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString('vi-VN') : ''}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 min-w-[160px]">
+                        {order.note && (
+                          <div className="text-[10px] text-slate-500 mb-2 bg-yellow-50 p-1.5 rounded border border-yellow-100 italic" title="Ghi chú của khách hàng">
+                            <span className="font-bold">Khách:</span> {order.note}
+                          </div>
+                        )}
+                        <textarea
+                          placeholder="Ghi chú nội bộ..."
+                          defaultValue={order.adminNote || ''}
+                          onBlur={(e) => {
+                            if (e.target.value !== (order.adminNote || '')) {
+                              updateOrderAdminNote(order.id!, e.target.value);
+                            }
+                          }}
+                          className="w-full min-h-[40px] text-[11px] p-1.5 border border-slate-200 rounded resize-none focus:ring-1 focus:ring-indigo-500 outline-none custom-scrollbar"
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-xs space-y-1">
+                          {order.items.map((item, idx) => (
+                            <div key={idx} className="flex gap-1">
+                              <span className="font-bold text-indigo-600 min-w-[20px]">{item.quantity}x</span>
+                              <span className="truncate max-w-[200px]">{item.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right font-bold text-red-600">
+                        {order.totalPrice.toLocaleString('vi-VN')}đ
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          'bg-slate-100 text-slate-700'
+                        }`}>
+                          {order.status === 'pending' ? 'Chờ duyệt' :
+                           order.status === 'approved' ? 'Đã duyệt' :
+                           order.status === 'completed' ? 'Đã xong' : 'Đã hủy'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <select 
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id!, e.target.value as any)}
+                            className="text-[10px] font-bold bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="pending">Chờ duyệt</option>
+                            <option value="approved">Duyệt</option>
+                            <option value="completed">Xong</option>
+                            <option value="cancelled">Hủy</option>
+                          </select>
+                          <button 
+                            onClick={() => { setViewingOrder(order); setIsOrderViewOpen(true); }}
+                            className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                            title="Xem chi tiết & In"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          {order.status === 'cancelled' && (
+                            <button 
+                              onClick={() => handleDeleteOrder(order.id!)}
+                              className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                              title="Xóa đơn hàng"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -1138,6 +1217,10 @@ function OrderViewModal({ order, onClose }: { order: Order, onClose: () => void 
               <p><span className="font-medium mr-2">Họ tên:</span> {order.customerName}</p>
               <p><span className="font-medium mr-2">Số điện thoại:</span> {order.customerPhone}</p>
               <p><span className="font-medium mr-2">Địa chỉ:</span> {order.customerAddress}</p>
+              <p><span className="font-medium mr-2">Ngày đặt:</span> {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString('vi-VN') : ''}</p>
+              {order.note && (
+                <p><span className="font-medium mr-2">Ghi chú:</span> {order.note}</p>
+              )}
             </div>
           </div>
 
