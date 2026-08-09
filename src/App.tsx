@@ -456,6 +456,8 @@ function StoreView({
   isLoading: boolean,
   category: string
 }) {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -482,15 +484,99 @@ function StoreView({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onAddToCart={() => onAddToCart(product)} 
+              onViewDetail={() => setSelectedProduct(product)}
+            />
           ))}
         </div>
       )}
+
+      <AnimatePresence>
+        {selectedProduct && (
+          <ProductDetailModal 
+            product={selectedProduct} 
+            onClose={() => setSelectedProduct(null)} 
+            onAddToCart={() => onAddToCart(selectedProduct)} 
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
-function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: () => void }) {
+function ProductDetailModal({ product, onClose, onAddToCart }: { product: Product, onClose: () => void, onAddToCart: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        onClick={e => e.stopPropagation()}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+      >
+        <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 shrink-0">
+          <h2 className="font-bold text-lg text-slate-800">Chi tiết sản phẩm</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-1/2 flex-shrink-0">
+              <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-center relative border border-slate-100 aspect-square">
+                {product.hot && (
+                  <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm z-10">HOT</span>
+                )}
+                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
+              </div>
+            </div>
+            
+            <div className="w-full md:w-1/2 flex flex-col">
+              <div className="mb-6">
+                <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold uppercase rounded-full tracking-wider mb-3">
+                  {product.category}
+                </span>
+                <h3 className="text-2xl font-bold text-slate-900 leading-tight mb-4">{product.name}</h3>
+                <div className="text-3xl font-black text-red-600 tracking-tight">
+                  ~{product.price.toLocaleString('vi-VN')}đ
+                </div>
+              </div>
+
+              <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed text-slate-600">
+                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-100 pb-2">Thông tin chi tiết</h4>
+                <p className="whitespace-pre-wrap">{product.description || 'Chưa có mô tả chi tiết cho sản phẩm này.'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-200 transition-colors"
+          >
+            Đóng
+          </button>
+          <button 
+            onClick={() => {
+              onAddToCart();
+              onClose();
+            }}
+            className="px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all flex items-center gap-2"
+          >
+            <ShoppingCart className="w-4 h-4" /> Thêm vào giỏ hàng
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function ProductCard({ product, onAddToCart, onViewDetail }: { product: Product, onAddToCart: () => void, onViewDetail: () => void }) {
   const [showDesc, setShowDesc] = useState(false);
 
   return (
@@ -501,7 +587,7 @@ function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: 
     >
       <div 
         className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden shrink-0 group/img cursor-pointer"
-        onClick={() => setShowDesc(!showDesc)}
+        onClick={onViewDetail}
         onMouseLeave={() => setShowDesc(false)}
       >
         {product.hot && (
@@ -513,14 +599,22 @@ function ProductCard({ product, onAddToCart }: { product: Product, onAddToCart: 
           className="w-full h-full object-contain p-4 group-hover/img:scale-105 transition-transform duration-300"
         />
         {/* Description Overlay */}
-        <div className={`absolute inset-0 bg-indigo-900/95 p-4 flex flex-col justify-center transition-all duration-300 z-10 w-full h-full custom-scrollbar overflow-y-auto ${showDesc ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 group-hover/img:opacity-100 group-hover/img:translate-y-0'}`}>
-          <h4 className="text-white text-xs font-bold mb-2 uppercase border-b border-indigo-700 pb-2">Mô tả sản phẩm</h4>
-          <p className="text-indigo-100 text-xs leading-relaxed whitespace-pre-wrap">{product.description || 'Đang cập nhật mô tả.'}</p>
+        <div className="absolute inset-0 bg-indigo-900/95 p-4 flex flex-col justify-center transition-all duration-300 z-10 w-full h-full custom-scrollbar overflow-y-auto opacity-0 translate-y-4 group-hover/img:opacity-100 group-hover/img:translate-y-0">
+          <h4 className="text-white text-xs font-bold mb-2 uppercase border-b border-indigo-700 pb-2">Mô tả tóm tắt</h4>
+          <p className="text-indigo-100 text-xs leading-relaxed whitespace-pre-wrap line-clamp-4 mb-2">{product.description || 'Đang cập nhật mô tả.'}</p>
+          <div className="text-[10px] text-white/70 font-medium flex items-center gap-1 mt-auto mx-auto bg-white/10 px-3 py-1.5 rounded-full uppercase tracking-wider">
+            <span>Nhấn để xem chi tiết</span>
+          </div>
         </div>
       </div>
       <div className="p-4 flex flex-col flex-1">
         <p className="text-[10px] text-indigo-600 font-bold uppercase mb-1">{product.category}</p>
-        <h3 className="text-sm font-bold text-slate-800 mb-2 line-clamp-2 min-h-[40px]">{product.name}</h3>
+        <h3 
+          className="text-sm font-bold text-slate-800 mb-2 line-clamp-2 min-h-[40px] cursor-pointer hover:text-indigo-600 transition-colors"
+          onClick={onViewDetail}
+        >
+          {product.name}
+        </h3>
         <p className="text-lg font-bold text-red-600 mt-auto">~{product.price.toLocaleString('vi-VN')}đ</p>
         <button 
           onClick={onAddToCart}
