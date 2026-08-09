@@ -1,6 +1,6 @@
 {
   "name": "Cửa hàng Độ Lành",
   "description": "Chuyên hàng nội địa Nhật Bản uy tín, chất lượng.",
-  "majorCapabilities": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"],
   "requestFramePermissions": []
 }

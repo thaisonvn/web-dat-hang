@@ -18,7 +18,8 @@ import {
   Users,
   ClipboardList,
   Eye,
-  Printer
+  Printer,
+  Sparkles
 } from 'lucide-react';
 import { 
   collection, 
@@ -80,7 +81,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo, null, 2));
+  console.error('Firestore Error: ', errInfo);
   // Do not throw to prevent white screen crashes
 }
 
@@ -1452,6 +1453,9 @@ function CategoryModal({ category, onClose }: { category: Category | null, onClo
 
 function ProductModal({ product, categories, onClose }: { product: Product | null, categories: Category[], onClose: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+
   const [form, setForm] = useState<Partial<Product>>(product || {
     name: '',
     category: categories[0]?.name || 'Chưa phân loại',
@@ -1461,6 +1465,36 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
     hot: false,
     note: ''
   });
+
+  const handleGenerateAI = async () => {
+    if (!form.name || !form.category || form.price === undefined) {
+      alert("Vui lòng nhập tên, danh mục và giá sản phẩm trước khi tạo mô tả bằng AI.");
+      return;
+    }
+    setIsGeneratingAI(true);
+    setAiSuggestion(null);
+    try {
+      const response = await fetch("/api/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          name: form.name, 
+          category: form.category, 
+          price: form.price 
+        }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        alert("Lỗi AI: " + data.error);
+      } else if (data.description) {
+        setAiSuggestion(data.description);
+      }
+    } catch (error) {
+      alert("Có lỗi xảy ra khi gọi AI.");
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1528,13 +1562,52 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Mô tả sản phẩm</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Mô tả sản phẩm</label>
+              <button
+                type="button"
+                onClick={handleGenerateAI}
+                disabled={isGeneratingAI}
+                className="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded text-xs font-bold transition-colors disabled:opacity-50"
+              >
+                <Sparkles className="w-3 h-3" />
+                {isGeneratingAI ? "Đang tạo..." : "AI Gợi ý"}
+              </button>
+            </div>
             <textarea 
               className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm custom-scrollbar h-24 resize-none"
               value={form.description}
               onChange={e => setForm({...form, description: e.target.value})}
               placeholder="Nhập mô tả sản phẩm..."
             />
+            
+            {aiSuggestion && (
+              <div className="mt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <h4 className="text-xs font-bold text-indigo-800 mb-2 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> Gợi ý từ AI:
+                </h4>
+                <p className="text-sm text-indigo-900 whitespace-pre-wrap mb-3">{aiSuggestion}</p>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setAiSuggestion(null)}
+                    className="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 rounded-md transition-colors"
+                  >
+                    Bỏ qua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(prev => ({ ...prev, description: aiSuggestion }));
+                      setAiSuggestion(null);
+                    }}
+                    className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm transition-colors"
+                  >
+                    Sử dụng mô tả này
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-500 uppercase">Ghi chú nội bộ (Không hiển thị cho khách)</label>
